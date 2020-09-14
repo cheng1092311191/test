@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .msg-box {
+            width: 80%;
+            height: 400px;
+            ;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #000;
+            border-radius: 5px;
+            overflow-y: scroll;
+            overflow-x:auto;
+        }
+
+        .msg-list {
+            list-style: none;
+            position: relative;
+        }
+
+        /* .msg-list>li{
+
+        } */
+        .nick {
+            font-size: 18px;
+        }
+
+        .msg-list>li::before {
+            position: absolute;
+            display: line;
+            content: '';
+            width: 10px;
+            height: 10px;
+            /* left: 10px;
+            top: 7px; */
+            margin-top:6px;
+            margin-left:-20px;
+            border-radius: 5px;
+            background-color: rgba(54, 50, 50, 0.658);
+
+        }
+        li:last-child::before{
+            background-color: rgba(14, 116, 56, 0.658);
+        }
+        span{
+            display: inline-block;
+        }
+        .send-box {
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 0px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div>
+        <span>聊天室</span>
+        <div class="msg-box" id="msg-box">
+            <ul class="msg-list">
+                <li><span>fasdfsf</span></li>
+            </ul>
+        </div>
+        <div class="send-box">
+            <input type="text" id="text">
+            <input type="button" value="send" id='send'>
+        </div>
+    </div>
+    <script src="/static/src/axios.min.js"></script>
+    <script>
+        var user,nickName,userId;
+        window.onload = function () {
+
+            function poll() {
+                let xml = new XMLHttpRequest();
+                xml.onreadystatechange = function (event) {
+                    if (this.readyState === 4) {
+                        let res;
+
+                        try {
+                            res = JSON.parse(this.responseText);
+                            console.log(res)
+                            if(res.status!=0 ){
+                                //add('<h1>提示</h1>', '<a href="/login.html">点击登录</a>')
+                                return ;
+                            }
+                            if(res.msg){
+                                add(nickName, res.msg);
+                            }
+                            setTimeout(poll, 0)
+                            
+                            
+                        } catch (er) {
+
+                        }
+
+
+                    }
+                }
+                xml.open('POST', '/poll')
+                xml.timeout = 1000 * 60
+                xml.setRequestHeader('content-type', 'application/json')
+                let body = {
+                    id: 1517
+                }
+                xml.send(JSON.stringify(body))
+            };
+
+            function checked(){
+                axios.post('/check').then((res)=>{
+                    let {data}=res;
+                    if(data.status==0){
+                        nickName=data.user.nickName;
+                        user=data.user.user;
+                        userId=data.user.userId;
+                        add('欢迎回来', `<h4>${data.user.nickName}</h4>`);
+                        setTimeout(poll,0);
+                    }else  add('<h1>提示</h1>', `<a href="/static/login.html">${data.message}</a>`);
+                })
+            }
+            checked()
+
+        }
+
+    </script>
+    <script>
+        let ul = document.getElementsByClassName('msg-list')[0];
+        let text = document.getElementById('text');
+        let send = document.getElementById('send');
+        let msgBox= document.getElementById('msg-box');
+
+        send.onclick = function () {
+            if(!text.value) return;
+            this.disabled = true
+            let xml = new XMLHttpRequest();
+            xml.onreadystatechange = function (event) {
+                if (this.readyState === 4) {
+                    if (this.status === 200) {
+                        text.value = ""
+                    }
+                    send.disabled=false;
+                    text.focus();
+                    
+                }
+            }
+            xml.open('POST', '/send')
+            xml.timeout = 1000 * 60
+            xml.setRequestHeader('content-type', 'application/json')
+            let body = {
+                id: 1517,
+                msg:text.value
+            }
+            xml.send(JSON.stringify(body))
+        }
+        function add(nickName, msg) {
+            let li = document.createElement('li');
+            li.innerHTML = `<span class="nick">${nickName} : </span><span>${msg}</span>`
+            li.className=''
+            li.clientWidth=350;
+            ul.append(li);
+            msgBox.scrollTop+=li.clientHeight;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+{
+    "admin":{
+        "user":"admin1",
+        "pass":"123456",
+        "userId":"10000",
+        "nickName":"管理员"
+    }
+}

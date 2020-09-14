@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+</head>
+<body>
+    <script>
+        window.onload=function(){
+            const user=document.getElementById('user');
+            const pwd=document.getElementById('pwd');
+            const login=document.getElementById('login');
+            function check(){
+                if(user.value.length<6||pwd.value.length<6)return false;
+                return true;
+            }
+            login.onclick=function(){
+                if(!user) return ;
+                const xml=new XMLHttpRequest();
+                xml.onreadystatechange=function(){
+                    if(xml.readyState!==4)return 
+                    if(xml.status===200){
+                        let res=JSON.parse(xml.responseText);
+                        alert(res.message);
+                        res.url&&(window.location.href=res.url);
+                    }
+                }
+                xml.open('POST','/login');
+                let data=JSON.stringify({
+                    user:user.value,
+                    pass:pwd.value
+                })
+                xml.setRequestHeader("content-Type","application/json")
+                xml.send(data)
+            }
+        }
+    </script>
+    <div class="box">
+        <div>
+            <label for="user">用户名:</label>
+            <input type="text" id="user">
+        </div>
+        <div>
+            <label for="pwd">密码:</label>
+            <input type="password" id="pwd">
+        </div>
+        <input type="button" value="登录" id="login">
+    </div>
+</body>
+</html>
